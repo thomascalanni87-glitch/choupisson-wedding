@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;family=Nunito:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #5e0f1a; }
+    input::placeholder, textarea::placeholder { color: rgba(255,246,240,0.72); opacity: 1; }
+    @keyframes swayTree { 0%, 100% { transform: rotate(-2.2deg) translateY(0); } 50% { transform: rotate(2.2deg) translateY(-6px); } }
+    @keyframes snowfall { from { transform: translateY(-10vh) translateX(0); } to { transform: translateY(110vh) translateX(20px); } }
+    @keyframes twinkleBulb { 0%, 100% { opacity: 0.5; box-shadow: 0 0 4px 1px rgba(255,240,210,0.4); } 50% { opacity: 1; box-shadow: 0 0 10px 3px rgba(255,240,210,0.9); } }
+    @keyframes confettiFly { 0% { transform: translate(0,0) rotate(0deg); opacity: 1; } 100% { transform: translate(var(--cx), var(--cy)) rotate(var(--cr)); opacity: 0; } }
+    @keyframes confettiFall { 0% { transform: translateY(-12vh) rotate(0deg); opacity: 0; } 8% { opacity: 1; } 100% { transform: translateY(112vh) rotate(var(--cr)); opacity: 0; } }
+    @keyframes tearFall { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 12% { opacity: 1; transform: translateY(10px) scale(1); } 100% { transform: translateY(110vh) scale(1); opacity: 0; } }
+  </style>
+</helmet>
+
+<div style="{{ rootStyle }}">
+
+  <div style="position:fixed; top:0; left:0; width:100%; height:10px; z-index:20; display:flex; justify-content:space-around; background:#3d0810;">
+    <sc-for list="{{ lights }}" as="lt" hint-placeholder-count="24">
+      <div style="{{ lt.style }}"></div>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ showConfetti }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; z-index:30; pointer-events:none; overflow:hidden;">
+      <sc-for list="{{ bigConfetti }}" as="p" hint-placeholder-count="60">
+        <div style="{{ p.style }}"></div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showTears }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; z-index:30; pointer-events:none; overflow:hidden;">
+      <sc-for list="{{ tears }}" as="t" hint-placeholder-count="40">
+        <div style="{{ t.style }}"></div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <div style="position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;">
+    <sc-for list="{{ trees }}" as="t" hint-placeholder-count="9">
+      <div style="{{ t.style }}">{{ t.svg }}</div>
+    </sc-for>
+  </div>
+
+  <sc-for list="{{ snowflakes }}" as="flake" hint-placeholder-count="18">
+    <div style="{{ flake.style }}"></div>
+  </sc-for>
+
+  <div style="max-width:720px; margin:0 auto; padding:48px 20px 100px; position:relative; z-index:1;">
+
+    <a href="index.dc.html" style="display: inline-block; font-family: 'Nunito',sans-serif; font-size: 20px; color: var(--red); text-decoration: none; margin-bottom: 24px; opacity: 0.85">← Accueil</a>
+
+    <div style="text-align:center; margin-bottom:36px;">
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:15px; text-transform:uppercase; letter-spacing:3.4px; color:var(--red); margin-bottom:14px; line-height:1.5;">C'est bientôt l'heure de sortir votre plus beau pull de Noël !</div>
+      <h1 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:58px; color:var(--text); margin:0; letter-spacing:-2px; line-height:0.95;">Mariage Civil</h1>
+      <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:600; font-size:46px; color:var(--red); margin:10px 0 8px; letter-spacing:-1.4px;">5 décembre 2026</div>
+      <p style="font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13px; text-transform:uppercase; letter-spacing:2.4px; color:var(--text-soft); margin:0;">Chalet, feu de bois &amp; guirlandes</p>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:36px;">
+      <button onClick="{{ toggleMusic }}" style="{{ musicButtonStyle }}">{{ musicLabel }}</button>
+      <span style="font-family: 'Nunito',sans-serif; font-size: 20px; color: var(--text-soft); opacity: 0.75">Le Choupi Noël</span>
+      <audio ref="{{ audioRef }}" src="audio/choupi-noel.mp3" loop="" preload="auto" style="display:none"></audio>
+    </div>
+
+    <div style="{{ cardStyle }}">
+
+      <label style="{{ labelStyle }}">Vos prénoms</label>
+      <input type="text" value="{{ name }}" onChange="{{ onNameChange }}" placeholder="Charlotte et Thomas" style="{{ inputStyle }}">
+
+      <label style="{{ labelStyle }}">Serez-vous présent·e ?</label>
+
+      <div ref="{{ trackRef }}" style="position: relative; margin: 0 10px 6px; height: 64px; width: 642px">
+        <div style="position:absolute; left:0; right:0; top:20px; height:8px; border-radius:4px; background:rgba(255,255,255,0.20);"></div>
+        <div style="{{ presenceFillStyle }}"></div>
+        <div onClick="{{ setPresenceNon }}" style="position:absolute; left:0; top:24px; transform:translate(-50%,-50%); width:36px; height:36px; border-radius:50%; cursor:pointer;"></div>
+        <div onClick="{{ setPresencePending }}" style="position:absolute; left:50%; top:24px; transform:translate(-50%,-50%); width:36px; height:36px; border-radius:50%; cursor:pointer;"></div>
+        <div onClick="{{ setPresenceOui }}" style="position:absolute; left:100%; top:24px; transform:translate(-50%,-50%); width:36px; height:36px; border-radius:50%; cursor:pointer;"></div>
+        <div onPointerDown="{{ onDragStart }}" style="{{ hedgehogStyle }}">
+          {{ hedgehogSvg }}
+        </div>
+        <sc-if value="{{ showConfetti }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; right:0; top:24px; width:0; height:0; z-index:3; pointer-events:none;">
+            <sc-for list="{{ confetti }}" as="p" hint-placeholder-count="26">
+              <div style="{{ p.style }}"></div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+
+      <p style="font-family: 'Nunito',sans-serif; font-size: 15px; color: var(--text-soft); opacity: 0.7; text-align: center; margin: 0 0 18px">Fais glisser le gros choupisson pour répondre</p><div style="display:flex; justify-content:space-between; align-items:center; margin:0 10px 30px;">
+        <span style="{{ tickNonStyle }}">Non</span>
+        <span style="{{ tickPendingStyle }}">Pas encore décidé</span>
+        <span style="{{ tickOuiStyle }}">Oui !</span>
+      </div>
+      
+
+      <div style="{{ foldStyle }}">
+      <div style="overflow:hidden; min-height:0;">
+
+      <label style="{{ labelStyle }}">Attentions alimentaires particulières</label>
+      <textarea value="{{ diet }}" onChange="{{ onDietChange }}" placeholder="Allergies, régime particulier, animaux vivants, pères Noël... tout ce que vous ne mangez pas..." style="{{ textareaStyle }}"></textarea>
+
+      <label style="{{ labelStyle }}">Un petit mot pour nous ?</label>
+      <textarea value="{{ note }}" onChange="{{ onNoteChange }}" placeholder="Une déclaration, une blague, une chanson de Noël..." style="{{ textareaStyle }}"></textarea>
+
+        <div style="margin-top:12px; border-top:1px solid var(--card-border); padding-top:28px;">
+          <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; color:var(--red); margin:0 0 4px; text-align:center; letter-spacing:-1.2px;">Le déroulé de la journée</h3>
+          <p style="font-family:'Nunito',sans-serif; font-size:12px; color:var(--text-soft); text-align:center; opacity:0.75; margin:0 0 20px;"><br></p>
+          <div style="position:relative; padding-left:56px;">
+            <sc-for list="{{ timeline }}" as="ev" hint-placeholder-count="4">
+              <div style="position:relative; padding-bottom:26px;">
+                <div style="position:absolute; left:-52px; top:-2px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:30px; line-height:1;">{{ ev.icon }}</div>
+                <div style="position:absolute; left:-35px; top:40px; bottom:6px; width:2px; background:rgba(255,255,255,0.45);"></div>
+                <div style="font-family:'Bricolage Grotesque',sans-serif; font-size:22px; font-weight:600; color:var(--text); letter-spacing:-0.6px;">{{ ev.time }} — {{ ev.title }}</div>
+                <sc-if value="{{ ev.mapUrl }}" hint-placeholder-val="{{ true }}">
+                  <a href="{{ ev.mapUrl }}" target="_blank" rel="noopener" style="font-family:'Space Grotesk',sans-serif; font-weight:500; letter-spacing:0.6px; font-size:12px; color:var(--text-soft); opacity:0.85; text-decoration:underline; text-underline-offset:3px;">{{ ev.place }}</a>
+                </sc-if>
+                <sc-if value="{{ ev.noMap }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-family:'Space Grotesk',sans-serif; font-weight:500; letter-spacing:0.6px; font-size:12px; color:var(--text-soft); opacity:0.85;">{{ ev.place }}</div>
+                </sc-if>
+                <sc-if value="{{ ev.blank }}" hint-placeholder-val="{{ false }}">
+                  <div style="height:18px;"></div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <a href="{{ calendarLink }}" target="_blank" rel="noopener" style="display:block; text-align:center; text-decoration:none; font-family:'Nunito',sans-serif; font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:1.2px; color:var(--red); border:1px solid var(--red); border-radius:999px; padding:13px 20px; margin-top:24px;">
+          Ajouter cette date de fou à mon agenda
+        </a>
+
+      </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px; margin-top:12px;">
+        <button onClick="{{ onSubmit }}" style="{{ submitButtonStyle }}">{{ submitLabel }}</button>
+      </div>
+
+      <sc-if value="{{ submitted }}" hint-placeholder-val="{{ false }}">
+        <p style="text-align:center; font-family:'Nunito',sans-serif; font-size:13px; color:var(--red); margin-top:14px;">Merci {{ name }} ! Votre réponse a été enregistrée (simulation).</p>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+function getCookie(name) {
+  const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return m ? decodeURIComponent(m[2]) : '';
+}
+function setCookie(name, value, days) {
+  const d = new Date();
+  d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000);
+  document.cookie = name + '=' + encodeURIComponent(value) + ';expires=' + d.toUTCString() + ';path=/';
+}
+
+class Component extends DCLogic {
+  state = {
+    name: '',
+    diet: '',
+    note: '',
+    presence: 'pending',
+    musicOn: false,
+    dragFrac: 0.5,
+    dragging: false,
+    submitted: false,
+    showConfetti: false,
+    showTears: false,
+  };
+
+  audioRef = React.createRef();
+  trackRef = React.createRef();
+
+  componentDidMount() {
+    const savedName = getCookie('choupisson_name');
+    if (savedName) this.setState({ name: savedName });
+  }
+
+  onNameChange = (e) => this.setState({ name: e.target.value });
+  onDietChange = (e) => this.setState({ diet: e.target.value });
+  onNoteChange = (e) => this.setState({ note: e.target.value });
+
+  setPresence(p) {
+    const wasOui = this.state.presence === 'oui';
+    this.setState({ presence: p, dragFrac: p === 'non' ? 0 : p === 'oui' ? 1 : 0.5 });
+    if (p === 'oui' && !wasOui) this.burstConfetti();
+    if (p === 'non') this.burstTears();
+  }
+
+  burstTears() {
+    clearTimeout(this._tearTimer);
+    this.setState({ showTears: false }, () => {
+      this.setState({ showTears: true });
+      this._tearTimer = setTimeout(() => this.setState({ showTears: false }), 4200);
+    });
+  }
+
+  burstConfetti() {
+    clearTimeout(this._confettiTimer);
+    this.setState({ showConfetti: false }, () => {
+      this.setState({ showConfetti: true });
+      this._confettiTimer = setTimeout(() => this.setState({ showConfetti: false }), 4200);
+    });
+  }
+
+  componentWillUnmount() { clearTimeout(this._confettiTimer); clearTimeout(this._tearTimer); }
+  setPresenceNon = () => this.setPresence('non');
+  setPresencePending = () => this.setPresence('pending');
+  setPresenceOui = () => this.setPresence('oui');
+
+  toggleMusic = () => {
+    this.setState((s) => {
+      const on = !s.musicOn;
+      try {
+        if (this.audioRef.current) {
+          if (on) this.audioRef.current.play().catch(() => {});
+          else this.audioRef.current.pause();
+        }
+      } catch (e) {}
+      return { musicOn: on };
+    });
+  };
+
+  onDragStart = (e) => {
+    e.preventDefault();
+    this.setState({ dragging: true });
+    const move = (ev) => this.updateDrag(ev.clientX);
+    const up = (ev) => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      const frac = this.state.dragFrac;
+      const snapped = frac < 0.25 ? 'non' : frac > 0.75 ? 'oui' : 'pending';
+      this.setState({ dragging: false });
+      this.setPresence(snapped);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  updateDrag(clientX) {
+    const el = this.trackRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    let frac = (clientX - rect.left) / rect.width;
+    frac = Math.max(0, Math.min(1, frac));
+    this.setState({ dragFrac: frac });
+  }
+
+  onSubmit = () => {
+    const payload = {
+      timestamp: new Date().toISOString(),
+      nom: this.state.name,
+      evenement: 'civil',
+      type_evenement: 'civil',
+      presence: this.state.presence,
+      preference_alimentaire: this.state.diet,
+      petit_mot: this.state.note,
+    };
+    console.log('[RSVP simulate] POST /api/rsvp', payload);
+    setCookie('choupisson_name', this.state.name, 180);
+    this.setState({ submitted: true });
+  };
+
+  buildCalendarLink() {
+    const text = encodeURIComponent("Mariage Civil de Thomas & Charlotte");
+    const details = encodeURIComponent("On vous attend pour le mariage civil !");
+    const dates = "20261205T100000Z/20261205T140000Z";
+    const location = encodeURIComponent("72 Av. de la République, 59461 Lille, France");
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${dates}&details=${details}&location=${location}`;
+  }
+
+  renderVals() {
+    const { presence, dragFrac, dragging, musicOn, submitted, name, diet, note } = this.state;
+
+    const RED = '#7c1220';
+
+    const rootStyle = {
+      minHeight: '100vh',
+      position: 'relative',
+      background: 'linear-gradient(180deg, #6b1120 0%, #4a0b14 100%)',
+      '--red': '#ffffff',
+      '--text': '#fffaf6',
+      '--text-soft': 'rgba(255,240,236,0.72)',
+      '--card-border': 'rgba(255,255,255,0.22)',
+    };
+
+    const lights = Array.from({ length: 24 }, (_, i) => ({
+      style: {
+        width: '8px', height: '8px', borderRadius: '50%',
+        background: i % 2 === 0 ? '#ffd9a0' : '#fff6e6',
+        animation: `twinkleBulb ${1.6 + (i % 5) * 0.2}s ease-in-out infinite`,
+        animationDelay: `${(i % 6) * 0.25}s`,
+      },
+    }));
+
+    const confettiColors = ['#ffffff', '#ffd9a0', '#ff8a9c', '#a8e6cf', '#ffe36b'];
+    const confetti = Array.from({ length: 26 }, (_, i) => {
+      const ang = (i / 26) * Math.PI * 2;
+      const dist = 70 + (i % 5) * 22;
+      return {
+        style: {
+          position: 'absolute',
+          width: i % 3 === 0 ? '9px' : '6px',
+          height: i % 3 === 0 ? '5px' : '6px',
+          borderRadius: i % 2 === 0 ? '1px' : '50%',
+          background: confettiColors[i % confettiColors.length],
+          '--cx': `${Math.cos(ang) * dist}px`,
+          '--cy': `${Math.sin(ang) * dist - 20}px`,
+          '--cr': `${(i % 2 ? 1 : -1) * (240 + i * 12)}deg`,
+          animation: 'confettiFly 0.95s cubic-bezier(0.2,0.7,0.3,1) forwards',
+          animationDelay: `${(i % 6) * 0.03}s`,
+        },
+      };
+    });
+
+    const bigConfetti = Array.from({ length: 60 }, (_, i) => ({
+      style: {
+        position: 'absolute',
+        left: `${(i * 7.3) % 100}%`,
+        top: 0,
+        width: i % 3 === 0 ? '12px' : '8px',
+        height: i % 3 === 0 ? '6px' : '8px',
+        borderRadius: i % 2 === 0 ? '1px' : '50%',
+        background: confettiColors[i % confettiColors.length],
+        '--cr': `${(i % 2 ? 1 : -1) * (540 + i * 9)}deg`,
+        animation: `confettiFall ${2.2 + (i % 7) * 0.28}s linear forwards`,
+        animationDelay: `${(i % 12) * 0.11}s`,
+      },
+    }));
+
+    const tears = Array.from({ length: 40 }, (_, i) => ({
+      style: {
+        position: 'absolute',
+        left: `${(i * 6.1 + 2) % 100}%`,
+        top: `${-4 - (i % 5) * 3}%`,
+        width: '9px', height: '13px',
+        borderRadius: '50% 50% 50% 50% / 68% 68% 32% 32%',
+        background: 'linear-gradient(180deg, rgba(190,235,255,0.95), rgba(120,200,255,0.75))',
+        boxShadow: '0 0 6px rgba(160,220,255,0.6)',
+        animation: `tearFall ${2.4 + (i % 6) * 0.3}s linear forwards`,
+        animationDelay: `${(i % 10) * 0.13}s`,
+      },
+    }));
+
+    const treeSvg = React.createElement('svg', { viewBox: '0 0 60 100', width: '100%', height: '100%' },
+      React.createElement('rect', { x: 26, y: 82, width: 8, height: 18, fill: 'rgba(255,255,255,0.16)' }),
+      React.createElement('path', { d: 'M 30 4 L 50 40 L 10 40 Z', fill: 'rgba(255,255,255,0.14)' }),
+      React.createElement('path', { d: 'M 30 24 L 54 62 L 6 62 Z', fill: 'rgba(255,255,255,0.13)' }),
+      React.createElement('path', { d: 'M 30 44 L 58 86 L 2 86 Z', fill: 'rgba(255,255,255,0.12)' })
+    );
+
+    const trees = Array.from({ length: 9 }, (_, i) => {
+      const h = 190 + (i % 4) * 90;
+      return {
+        svg: treeSvg,
+        style: {
+          position: 'absolute',
+          left: `${(i * 12.5 - 2) % 100}%`,
+          bottom: `${-3 + (i % 3) * 5}%`,
+          width: `${h * 0.6}px`, height: `${h}px`,
+          transformOrigin: '50% 100%',
+          animation: `swayTree ${7 + (i % 5) * 1.4}s ease-in-out infinite`,
+          animationDelay: `${(i % 6) * 0.8}s`,
+        },
+      };
+    });
+
+    const snowflakes = Array.from({ length: 18 }, (_, i) => ({
+      style: {
+        position: 'fixed', top: '-10px', left: `${(i * 5.6) % 100}%`,
+        width: '5px', height: '5px', borderRadius: '50%',
+        background: 'rgba(255,255,255,0.55)',
+        animation: `snowfall ${9 + (i % 6)}s linear infinite`,
+        animationDelay: `${i * 0.6}s`,
+        zIndex: 0,
+      },
+    }));
+
+    const musicButtonStyle = {
+      fontFamily: 'Nunito, sans-serif', fontSize: '13px', fontWeight: 700,
+      textTransform: 'uppercase', letterSpacing: '1.2px',
+      padding: '10px 16px', borderRadius: '999px', cursor: 'pointer',
+      border: '1px solid transparent',
+      background: musicOn ? '#ffffff' : '#a8323f',
+      color: musicOn ? '#7c1220' : '#ffffff',
+    };
+
+    const cardStyle = {
+      background: 'rgba(107,17,32,0.55)', backdropFilter: 'blur(8px)', border: '1px solid var(--card-border)',
+      borderRadius: '20px', padding: '32px 28px',
+      boxShadow: '0 18px 44px rgba(0,0,0,0.30)',
+    };
+    const labelStyle = {
+      display: 'block', fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '12px',
+      color: '#ffd9b0', textTransform: 'uppercase', letterSpacing: '1.2px', margin: '0 0 10px',
+    };
+    const inputStyle = {
+      width: '100%', boxSizing: 'border-box', padding: '13px 14px', borderRadius: '10px',
+      border: '1px solid var(--card-border)', background: 'rgba(255,255,255,0.10)',
+      color: 'var(--text)', fontFamily: 'Nunito, sans-serif', fontSize: '15px', marginBottom: '30px',
+    };
+    const textareaStyle = {
+      width: '100%', boxSizing: 'border-box', padding: '13px 14px', borderRadius: '10px',
+      border: '1px solid var(--card-border)', background: 'rgba(255,255,255,0.10)',
+      color: 'var(--text)', fontFamily: 'Nunito, sans-serif', fontSize: '14px',
+      minHeight: '74px', marginBottom: '20px', resize: 'vertical',
+    };
+
+    const frac = dragging ? dragFrac : (presence === 'non' ? 0 : presence === 'oui' ? 1 : 0.5);
+
+    const presenceFillStyle = {
+      position: 'absolute', left: 0, top: '20px', height: '8px',
+      width: `${frac * 100}%`,
+      background: 'linear-gradient(90deg, rgba(255,255,255,0.55), #ffffff)',
+      borderRadius: '4px',
+      transition: dragging ? 'none' : 'width 0.35s cubic-bezier(0.34,1.4,0.64,1)',
+    };
+
+    const smile = (frac - 0.5) * 2;
+    const mouthDy = smile * 12;
+    const mouthPath = `M 30 62 Q 45 ${62 + mouthDy} 60 62`;
+    const browRotate = smile * 18;
+
+    const hedgehogSvg = React.createElement('svg', { width: 76, height: 76, viewBox: '0 0 90 90' },
+      React.createElement('ellipse', { cx: 45, cy: 55, rx: 34, ry: 26, fill: '#b98a63' }),
+      React.createElement('path', { d: 'M 14 45 L 22 20 L 30 44 Z', fill: '#8a6040' }),
+      React.createElement('path', { d: 'M 26 38 L 34 12 L 42 38 Z', fill: '#9a6f4c' }),
+      React.createElement('path', { d: 'M 40 34 L 48 10 L 56 34 Z', fill: '#8a6040' }),
+      React.createElement('path', { d: 'M 54 38 L 62 14 L 70 40 Z', fill: '#9a6f4c' }),
+      React.createElement('path', { d: 'M 66 44 L 76 22 L 78 46 Z', fill: '#8a6040' }),
+      React.createElement('path', { d: 'M 20 32 L 30 6 L 40 30 Z', fill: '#7c1220' }),
+      React.createElement('ellipse', { cx: 45, cy: 62, rx: 20, ry: 15, fill: '#f8ece0' }),
+      React.createElement('circle', { cx: 34, cy: 55, r: 3.2, fill: '#2a1215' }),
+      React.createElement('circle', { cx: 56, cy: 55, r: 3.2, fill: '#2a1215' }),
+      React.createElement('path', { d: `M 29 ${48 + smile * 2} Q 34 ${48 - smile * 6} 39 ${48 + smile * 2}`, stroke: '#2a1215', strokeWidth: 2, fill: 'none', strokeLinecap: 'round', transform: `rotate(${browRotate} 34 48)` }),
+      React.createElement('path', { d: `M 51 ${48 + smile * 2} Q 56 ${48 - smile * 6} 61 ${48 + smile * 2}`, stroke: '#2a1215', strokeWidth: 2, fill: 'none', strokeLinecap: 'round', transform: `rotate(${-browRotate} 56 48)` }),
+      smile > 0.4 ? React.createElement('g', { key: 'joy', opacity: smile },
+        React.createElement('ellipse', { cx: 28, cy: 62, rx: 4, ry: 2.6, fill: '#e8899a', opacity: 0.75 }),
+        React.createElement('ellipse', { cx: 62, cy: 62, rx: 4, ry: 2.6, fill: '#e8899a', opacity: 0.75 })
+      ) : null,
+      React.createElement('ellipse', { cx: 45, cy: 60, rx: 3.5, ry: 2.5, fill: '#4a2f20' }),
+      React.createElement('path', { d: mouthPath, stroke: '#2a1215', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' }),
+      smile < -0.4 ? React.createElement('g', { key: 'cry' },
+        React.createElement('ellipse', { cx: 33, cy: 63, rx: 2.6, ry: 4, fill: '#8ecbf0' }),
+        React.createElement('ellipse', { cx: 57, cy: 63, rx: 2.6, ry: 4, fill: '#8ecbf0' })
+      ) : null,
+      React.createElement('path', { d: 'M 38 72 L 45 66 L 52 72 L 45 76 Z', fill: '#7c1220' })
+    );
+
+    const hedgehogStyle = {
+      position: 'absolute',
+      left: `${frac * 100}%`,
+      top: '24px',
+      width: '76px', height: '76px',
+      marginLeft: '-38px', marginTop: '-38px',
+      cursor: 'grab', userSelect: 'none', touchAction: 'none',
+      filter: 'drop-shadow(0 4px 8px rgba(124,18,32,0.28))',
+      transform: `rotate(${smile * -7}deg)`,
+      transition: dragging ? 'none' : 'left 0.35s cubic-bezier(0.34,1.4,0.64,1), transform 0.35s ease',
+      zIndex: 2,
+    };
+
+    const tick = (active) => ({
+      fontFamily: 'Cormorant Garamond, serif', fontSize: active ? '30px' : '26px',
+      fontWeight: active ? 700 : 500, letterSpacing: '0.5px',
+      color: active ? '#7c1220' : 'var(--text-soft)',
+      background: active ? '#ffffff' : 'transparent',
+      border: active ? '2px solid #ffffff' : '2px solid transparent',
+      borderRadius: '999px', padding: '4px 18px',
+      boxShadow: active ? '0 6px 18px rgba(0,0,0,0.25)' : 'none',
+      transition: 'all 0.25s ease',
+    });
+
+    const timeline = [
+      { time: '11h00', title: 'Cérémonie civile', place: 'Mairie de Lomme - 72 Av. de la République, 59461 Lille', icon: '💍' },
+      { time: '11h30', title: 'Brunch & Vin chaud', place: 'La Choupissonnière - 52T Rue Alexandre Desrousseaux', icon: '🥐' },
+      { time: '18h00', title: 'Apéro', place: 'La Choupissonnière', icon: '🥂' },
+      { time: '21h00', title: 'Nuit de noce', place: 'La Choupissonnière', icon: '❤️' },
+      { time: '23h00', icon: '📺', title: "Faîtes entrer l'Accusé", place: 'RMC Life - Jean-Mimi Touchepas : le tripoteur des Cévènes au lubrifiant goût vanille' },
+    ];
+
+    const MAIRIE = '72 Av. de la République, 59461 Lille, France';
+    const CHOUPI = '52T Rue Alexandre Desrousseaux, Lille, France';
+    const mapsFor = { '11h00': MAIRIE, '11h30': CHOUPI };
+    const blankPlace = ['18h00', '21h00'];
+    const timelineWithMaps = timeline.map((ev) => {
+      const addr = mapsFor[ev.time];
+      const blank = blankPlace.includes(ev.time);
+      return {
+        ...ev,
+        mapUrl: addr ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr) : null,
+        noMap: !addr && !blank,
+        blank,
+      };
+    });
+
+    const submitButtonStyle = {
+      fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '13px',
+      textTransform: 'uppercase', letterSpacing: '1.2px',
+      padding: '15px 20px', borderRadius: '999px', border: 'none', cursor: 'pointer',
+      background: '#ffffff', color: '#7c1220',
+    };
+
+    return {
+      rootStyle, snowflakes, lights, trees,
+      confetti, showConfetti: this.state.showConfetti,
+      bigConfetti, tears, showTears: this.state.showTears,
+      musicButtonStyle, musicLabel: musicOn ? '🔊 Couper la musique' : '🔇 Écouter l\'hymne officiel',
+      toggleMusic: this.toggleMusic, audioRef: this.audioRef,
+      cardStyle, labelStyle, inputStyle, textareaStyle,
+      name, onNameChange: this.onNameChange,
+      diet, onDietChange: this.onDietChange,
+      note, onNoteChange: this.onNoteChange,
+      foldStyle: {
+        display: 'grid',
+        gridTemplateRows: presence === 'oui' ? '1fr' : '0fr',
+        opacity: presence === 'oui' ? 1 : 0,
+        transition: 'grid-template-rows 1.5s cubic-bezier(0.22,0.8,0.3,1), opacity 1.5s ease',
+      },
+      presenceFillStyle,
+      setPresenceNon: this.setPresenceNon, setPresencePending: this.setPresencePending, setPresenceOui: this.setPresenceOui,
+      tickNonStyle: tick(presence === 'non'),
+      tickPendingStyle: tick(presence === 'pending'),
+      tickOuiStyle: tick(presence === 'oui'),
+      trackRef: this.trackRef, onDragStart: this.onDragStart,
+      hedgehogStyle, hedgehogSvg,
+      presenceIsOui: presence === 'oui',
+      timeline: timelineWithMaps,
+      calendarLink: this.buildCalendarLink(),
+      onSubmit: this.onSubmit,
+      submitButtonStyle, submitLabel: 'Envoyer ma réponse',
+      submitted,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

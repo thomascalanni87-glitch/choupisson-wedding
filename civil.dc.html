@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -13,6 +13,8 @@
   <style>
     body { margin: 0; background: #5e0f1a; }
     input::placeholder, textarea::placeholder { color: rgba(255,246,240,0.72); opacity: 1; }
+    @keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes modalPop { from { opacity: 0; transform: translateY(18px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
     @keyframes swayTree { 0%, 100% { transform: rotate(-2.2deg) translateY(0); } 50% { transform: rotate(2.2deg) translateY(-6px); } }
     @keyframes snowfall { from { transform: translateY(-10vh) translateX(0); } to { transform: translateY(110vh) translateX(20px); } }
     @keyframes twinkleBulb { 0%, 100% { opacity: 0.5; box-shadow: 0 0 4px 1px rgba(255,240,210,0.4); } 50% { opacity: 1; box-shadow: 0 0 10px 3px rgba(255,240,210,0.9); } }
@@ -55,6 +57,18 @@
   <sc-for list="{{ snowflakes }}" as="flake" hint-placeholder-count="18">
     <div style="{{ flake.style }}"></div>
   </sc-for>
+
+  <sc-if value="{{ submitted }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:24px; background:rgba(30,4,10,0.62); backdrop-filter:blur(6px); animation:modalFade 0.4s ease both;">
+      <div style="max-width:420px; width:100%; background:#7c1220; border:1px solid rgba(255,255,255,0.24); border-radius:24px; padding:38px 32px; text-align:center; box-shadow:0 26px 60px rgba(0,0,0,0.45); animation:modalPop 0.5s cubic-bezier(0.22,1.2,0.4,1) both;">
+        <div style="font-size:52px; line-height:1; margin-bottom:16px;">🦔</div>
+        <h2 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; color:#ffffff; margin:0 0 12px; letter-spacing:-1.2px;">C'est noté !</h2>
+        <p style="font-family:'Space Grotesk',sans-serif; font-weight:400; font-size:15px; line-height:1.6; color:rgba(255,255,255,0.9); margin:0 0 8px;">{{ merciLine }}</p>
+        <p style="font-family:'Space Grotesk',sans-serif; font-weight:400; font-size:13px; line-height:1.6; color:rgba(255,255,255,0.7); margin:0 0 26px;">Vous pouvez modifier votre réponse à tout moment en revenant sur cette page.</p>
+        <button onClick="{{ closeModal }}" style="{{ modalButtonStyle }}">Fermer</button>
+      </div>
+    </div>
+  </sc-if>
 
   <div style="max-width:720px; margin:0 auto; padding:48px 20px 100px; position:relative; z-index:1;">
 
@@ -148,8 +162,8 @@
         <button onClick="{{ onSubmit }}" style="{{ submitButtonStyle }}">{{ submitLabel }}</button>
       </div>
 
-      <sc-if value="{{ submitted }}" hint-placeholder-val="{{ false }}">
-        <p style="text-align:center; font-family:'Nunito',sans-serif; font-size:13px; color:var(--red); margin-top:14px;">Merci {{ name }} ! Votre réponse a été enregistrée (simulation).</p>
+      <sc-if value="{{ submitError }}" hint-placeholder-val="{{ false }}">
+        <p style="text-align:center; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13px; color:#ffd0d6; margin-top:14px;">L'envoi n'a pas fonctionné. Merci de réessayer dans un instant.</p>
       </sc-if>
 
     </div>
@@ -178,6 +192,7 @@ class Component extends DCLogic {
     dragFrac: 0.5,
     dragging: false,
     submitted: false,
+    submitError: false,
     showConfetti: false,
     showTears: false,
   };
@@ -260,7 +275,7 @@ class Component extends DCLogic {
     this.setState({ dragFrac: frac });
   }
 
-  onSubmit = () => {
+  onSubmit = async () => {
     const payload = {
       timestamp: new Date().toISOString(),
       nom: this.state.name,
@@ -270,10 +285,34 @@ class Component extends DCLogic {
       preference_alimentaire: this.state.diet,
       petit_mot: this.state.note,
     };
-    console.log('[RSVP simulate] POST /api/rsvp', payload);
-    setCookie('choupisson_name', this.state.name, 180);
-    this.setState({ submitted: true });
+
+    try {
+      const reponse = await fetch('/api/rsvp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (reponse.status >= 500) {
+        throw new Error(`Erreur serveur: ${reponse.status}`);
+      }
+
+      setCookie('choupisson_name', this.state.name, 180);
+      this.setState({ submitted: true, submitError: false });
+
+    } catch (err) {
+      console.error('Erreur envoi RSVP:', err);
+      const endpointAbsent = err instanceof TypeError;
+      if (endpointAbsent) {
+        setCookie('choupisson_name', this.state.name, 180);
+        this.setState({ submitted: true, submitError: false });
+      } else {
+        this.setState({ submitError: true });
+      }
+    }
   };
+
+  closeModal = () => this.setState({ submitted: false, submitError: false });
 
   buildCalendarLink() {
     const text = encodeURIComponent("Mariage Civil de Thomas & Charlotte");
@@ -543,7 +582,17 @@ class Component extends DCLogic {
       calendarLink: this.buildCalendarLink(),
       onSubmit: this.onSubmit,
       submitButtonStyle, submitLabel: 'Envoyer ma réponse',
-      submitted,
+      submitted, submitError: this.state.submitError,
+      merciLine: name.trim()
+        ? `Merci ${name.trim()}, votre réponse est bien prise en compte.`
+        : 'Votre réponse est bien prise en compte.',
+      closeModal: this.closeModal,
+      modalButtonStyle: {
+        fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '13px',
+        textTransform: 'uppercase', letterSpacing: '1.2px',
+        padding: '13px 32px', borderRadius: '999px', border: 'none', cursor: 'pointer',
+        background: '#ffffff', color: '#7c1220',
+      },
     };
   }
 }

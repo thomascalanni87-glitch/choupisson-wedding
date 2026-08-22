@@ -19,7 +19,9 @@ module.exports = async (req, res) => {
       petit_mot,                 // texte libre (déclaration, blague, etc.)
       nb_hesitations_choupisson, // nombre de va-et-vient du drag
       musique_ecoutee,           // booléen
-      couchages,                 // 0, 1 ou 2, uniquement pour religieux
+      couchages,                 // 0, 1 ou 2 — uniquement religieux
+      mode_synthwave_teste,      // booléen — uniquement religieux
+      rebond,                    // booléen — présence au rebond du lendemain, uniquement religieux
     } = req.body;
 
     // Validation minimale — on ne veut pas écrire n'importe quoi dans le Sheet
@@ -42,7 +44,8 @@ module.exports = async (req, res) => {
     // Une ligne = une soumission. Ordre des colonnes à faire correspondre
     // à l'en-tête de ton Google Sheet :
     // Timestamp | Nom | Événement | Présence | Préférence alimentaire |
-    // Petit mot | Nb hésitations choupisson | Musique écoutée | Couchages
+    // Petit mot | Nb hésitations choupisson | Musique écoutée | Couchages |
+    // Mode synthwave testé | Rebond du lendemain
     const row = [
       timestamp,
       nom,
@@ -53,11 +56,13 @@ module.exports = async (req, res) => {
       nb_hesitations_choupisson ?? '',
       musique_ecoutee ? 'Oui' : 'Non',
       couchages ?? '',
+      mode_synthwave_teste ? 'Oui' : 'Non',
+      rebond ? 'Oui' : 'Non',
     ];
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'Feuille1!A:I', // adapte le nom de l'onglet si besoin
+      range: 'Feuille1!A:K',
       valueInputOption: 'USER_ENTERED',
       insertDataOption: 'INSERT_ROWS',
       requestBody: { values: [row] },

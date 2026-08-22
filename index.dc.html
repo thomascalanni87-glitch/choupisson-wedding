@@ -51,12 +51,18 @@
     <h1 style="font-family:'Cormorant Garamond',serif; font-weight:500; font-size:66px; color:var(--text); margin:0 0 6px; text-align:center; letter-spacing:2px; position:relative; z-index:1;">
       Choupisson Wedding
     </h1>
-    <p style="font-family:'Nunito',sans-serif; font-size:18px; color:var(--text-soft); margin:0 0 56px; text-align:center; position:relative; z-index:1;">Charlotte &amp; Thomas&nbsp;se marient — deux fois !</p>
+    <p style="font-family:'Nunito',sans-serif; font-size:18px; color:var(--text-soft); margin:0 0 14px; text-align:center; position:relative; z-index:1;">Charlotte &amp; Thomas&nbsp;se marient — deux fois !</p>
+    <p style="font-family:'Nunito',sans-serif; font-size:15px; line-height:1.6; color:var(--text-soft); margin:0 0 56px; text-align:center; max-width:520px; position:relative; z-index:1; text-wrap:pretty;">Choisissez la célébration qui vous concerne pour découvrir le programme et nous confirmer votre présence.</p>
 
     <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:32px; width:100%; max-width:920px; position:relative; z-index:1;">
 
-      <a href="civil.dc.html" style="flex:1 1 320px; min-width:280px; max-width:420px; text-decoration:none; display:block;">
-        <div style="background:var(--card-bg); border-radius:24px; padding:40px 32px; text-align:center; box-shadow:0 10px 30px var(--shadow); border:1px solid var(--card-border); transition:transform 0.2s, background 0.7s ease, border-color 0.7s ease, box-shadow 0.7s ease;" style-hover="transform:translateY(-4px);">
+      <a href="{{ civilHref }}" style="{{ civilLinkStyle }}">
+        <div style="{{ civilCardStyle }}">
+          <sc-if value="{{ civilDone }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute; inset:0; overflow:hidden; border-radius:24px; pointer-events:none; z-index:2;">
+              <div style="position:absolute; top:2%; left:-52%; width:160%; transform:rotate(-18deg); background:linear-gradient(90deg,#8a7a6d,#5f524a); color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; letter-spacing:4px; text-align:center; padding:12px 0; box-shadow:0 6px 18px rgba(0,0,0,0.25);">ILS ONT DIT OUI !</div>
+            </div>
+          </sc-if>
           <div style="font-size: 70px; margin-bottom: 12px">🎄</div>
           <div style="font-family: 'Caveat',cursive; font-size: 40px; color: var(--accent); margin-bottom: 4px">Le civil</div>
           
@@ -88,9 +94,6 @@
       {{ synthLabel }}
     </button>
 
-    <p style="font-family:'Nunito',sans-serif; font-size:12px; color:var(--text-soft); opacity:0.7; margin-top:48px; text-align:center; max-width:420px; position:relative; z-index:1;">
-      Logo à venir — glissez une image ci-dessus pour la remplacer.
-    </p>
   </div>
 </div>
 
@@ -107,6 +110,11 @@ class Component extends DCLogic {
   }
 
   toggleSynthwave = () => {
+    try {
+      const d = new Date();
+      d.setTime(d.getTime() + 365 * 24 * 60 * 60 * 1000);
+      document.cookie = 'choupisson_synthwave_clique=1;expires=' + d.toUTCString() + ';path=/';
+    } catch (e) {}
     this.setState((s) => {
       const next = !s.synthwave;
       try { localStorage.setItem('choupisson-synthwave', next ? '1' : '0'); } catch (e) {}
@@ -234,9 +242,25 @@ class Component extends DCLogic {
 
     const daysCivil = this.daysUntil('2026-12-05');
     const religieuxLocked = daysCivil > 0;
+    const civilDone = daysCivil === 0;
 
     return {
       synthLayerStyle,
+      civilDone,
+      civilHref: civilDone ? undefined : 'civil.dc.html',
+      civilLinkStyle: {
+        flex: '1 1 320px', minWidth: '280px', maxWidth: '420px', textDecoration: 'none', display: 'block',
+        cursor: civilDone ? 'not-allowed' : 'pointer',
+        pointerEvents: civilDone ? 'none' : 'auto',
+      },
+      civilCardStyle: {
+        position: 'relative',
+        background: 'var(--card-bg)', borderRadius: '24px', padding: '40px 32px', textAlign: 'center',
+        boxShadow: '0 10px 30px var(--shadow)', border: '1px solid var(--card-border)',
+        transition: 'transform 0.2s, background 0.7s ease, border-color 0.7s ease, box-shadow 0.7s ease, filter 0.7s ease, opacity 0.7s ease',
+        filter: civilDone ? 'grayscale(0.7) saturate(0.5) brightness(1.06) contrast(0.9)' : 'none',
+        opacity: civilDone ? 0.7 : 1,
+      },
       religieuxLocked,
       religieuxHref: religieuxLocked ? undefined : 'religieux.dc.html',
       religieuxLinkStyle: {

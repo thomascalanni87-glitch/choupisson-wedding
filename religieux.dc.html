@@ -88,7 +88,7 @@
 
       <label style="{{ labelStyle }}">Serez-vous présent·e ?</label>
 
-      <div ref="{{ trackRef }}" style="position:relative; margin:0 10px 6px; height:64px;">
+      <p style="font-family:'Nunito',sans-serif; font-size:15px; color:var(--text-soft); opacity:0.75; text-align:center; margin:0 0 18px;">Fais glisser la petite choupissonne pour répondre</p><div ref="{{ trackRef }}" style="position:relative; margin:0 42px 6px; height:64px; max-width:100%; box-sizing:border-box;">
         <div style="position:absolute; left:0; right:0; top:20px; height:8px; border-radius:4px; background:rgba(47,74,74,0.14);"></div>
         <div style="{{ presenceFillStyle }}"></div>
         <div onClick="{{ setPresenceNon }}" style="position:absolute; left:0; top:24px; transform:translate(-50%,-50%); width:36px; height:36px; border-radius:50%; cursor:pointer;"></div>
@@ -99,9 +99,9 @@
         </div>
       </div>
 
-      <p style="font-family:'Nunito',sans-serif; font-size:15px; color:var(--text-soft); opacity:0.75; text-align:center; margin:0 0 18px;">Fais glisser la petite choupissonne pour répondre</p>
+      
 
-      <div style="display:flex; justify-content:space-between; align-items:center; margin:0 10px 30px;">
+      <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; align-items:center; margin:0 10px 30px;">
         <span style="{{ tickNonStyle }}">Non</span>
         <span style="{{ tickPendingStyle }}">Pas encore décidé</span>
         <span style="{{ tickOuiStyle }}">Oui !</span>
@@ -122,6 +122,13 @@
         </sc-for>
       </div>
 
+      <label style="{{ labelStyle }}">Est-ce qu'on va participer au rebond ?</label>
+      <div style="display:flex; gap:10px; margin-bottom:30px;">
+        <sc-for list="{{ rebondOptions }}" as="opt" hint-placeholder-count="2">
+          <button onClick="{{ opt.onClick }}" style="{{ opt.style }}">{{ opt.label }}</button>
+        </sc-for>
+      </div>
+
         <div style="margin-top:12px; border-top:1px solid var(--card-border); padding-top:28px;">
           <h3 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:30px; color:var(--coral); margin:0 0 4px; text-align:center; letter-spacing:-1.2px;">Le déroulé de la journée</h3>
           <p style="font-family:'Nunito',sans-serif; font-size:12px; color:var(--text-soft); text-align:center; opacity:0.8; margin:0 0 20px;"><br></p>
@@ -135,7 +142,7 @@
                   <div style="height:18px;"></div>
                 </sc-if>
                 <sc-if value="{{ ev.mapUrl }}" hint-placeholder-val="{{ true }}">
-                  <a href="{{ ev.mapUrl }}" target="_blank" rel="noopener" style="font-family:'Space Grotesk',sans-serif; font-weight:500; letter-spacing:0.6px; font-size:12px; color:var(--text-soft); opacity:0.85; text-decoration:underline; text-underline-offset:3px;">{{ ev.place }}</a>
+                  <div style="font-family:'Space Grotesk',sans-serif; font-weight:500; letter-spacing:0.6px; font-size:14px; display:inline-flex; align-items:center; gap:6px; color:var(--text-soft); opacity:0.85;"><span style="font-size:15px; line-height:1;">📍</span><a href="{{ ev.mapUrl }}" target="_blank" rel="noopener" style="color:inherit; font:inherit; letter-spacing:inherit; text-decoration:underline; text-underline-offset:3px;">{{ ev.place }}</a></div>
                 </sc-if>
               </div>
             </sc-for>
@@ -179,6 +186,7 @@ class Component extends DCLogic {
     diet: '',
     note: '',
     beds: 0,
+    rebond: false,
     presence: 'pending',
     musicOn: false,
     dragFrac: 0.5,
@@ -211,6 +219,7 @@ class Component extends DCLogic {
         diet: a.diet || '',
         note: a.note || '',
         beds: typeof a.beds === 'number' ? a.beds : 0,
+        rebond: !!a.rebond,
         presence: a.presence || 'pending',
         dragFrac: a.presence === 'non' ? 0 : a.presence === 'oui' ? 1 : 0.5,
         alreadySent: true,
@@ -224,12 +233,12 @@ class Component extends DCLogic {
     const a = {
       name: this.state.name,
       diet: this.state.diet,
-      note: this.state.note, beds: this.state.beds,
+      note: this.state.note, beds: this.state.beds, rebond: this.state.rebond,
       presence: this.state.presence,
       dragMoves: this.state.dragMoves,
       musicPlayed: this.state.musicPlayed,
     };
-    setCookie('choupisson_reponse_religieux', JSON.stringify(a), 180);
+    setCookie('choupisson_reponse_religieux', JSON.stringify(a), 365);
   }
 
   componentWillUnmount() {
@@ -241,6 +250,7 @@ class Component extends DCLogic {
   onDietChange = (e) => this.setState({ diet: e.target.value });
   onNoteChange = (e) => this.setState({ note: e.target.value });
   setBeds = (n) => this.setState({ beds: n });
+  setRebond = (v) => this.setState({ rebond: v });
 
   setPresence(p) {
     const wasOui = this.state.presence === 'oui';
@@ -323,7 +333,9 @@ class Component extends DCLogic {
       petit_mot: this.state.note,
       nb_hesitations_choupisson: this.state.dragMoves,
       musique_ecoutee: this.state.musicPlayed,
+      mode_synthwave_teste: getCookie('choupisson_synthwave_clique') === '1',
       couchages: this.state.beds,
+      rebond: this.state.rebond,
     };
     try {
       const reponse = await fetch('/api/rsvp', {
@@ -336,7 +348,7 @@ class Component extends DCLogic {
         throw new Error(`Erreur serveur: ${reponse.status}`);
       }
 
-      setCookie('choupisson_name', this.state.name, 180);
+      setCookie('choupisson_name', this.state.name, 365);
       this.saveAnswer();
       this.setState({ submitted: true, submitError: false, alreadySent: true });
 
@@ -344,7 +356,7 @@ class Component extends DCLogic {
       console.error('Erreur envoi RSVP:', err);
       const endpointAbsent = err instanceof TypeError;
       if (endpointAbsent) {
-        setCookie('choupisson_name', this.state.name, 180);
+        setCookie('choupisson_name', this.state.name, 365);
         this.saveAnswer();
         this.setState({ submitted: true, submitError: false, alreadySent: true });
       } else {
@@ -364,7 +376,7 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    const { presence, dragFrac, dragging, musicOn, submitted, name, nameFromCookie, diet, note, beds } = this.state;
+    const { presence, dragFrac, dragging, musicOn, submitted, name, nameFromCookie, diet, note, beds, rebond } = this.state;
 
     const TURQ = '#0f9bb8';
     const CORAL = '#ff3d6e';
@@ -535,12 +547,16 @@ class Component extends DCLogic {
     };
 
     const tick = (active) => ({
-      fontFamily: 'Cormorant Garamond, serif', fontSize: active ? '30px' : '26px',
-      fontWeight: active ? 700 : 500, letterSpacing: '0.5px',
+      fontFamily: 'Nunito, sans-serif',
+      fontSize: 'clamp(10px, 2.6vw, 13px)',
+      fontWeight: 700, textTransform: 'uppercase',
+      letterSpacing: 'clamp(0.4px, 0.25vw, 1.2px)',
+      whiteSpace: 'nowrap',
+      padding: 'clamp(7px, 2vw, 10px) clamp(9px, 3vw, 16px)',
       color: active ? '#ffffff' : 'var(--text-soft)',
       background: active ? TURQ : 'transparent',
       border: active ? `2px solid ${TURQ}` : '2px solid transparent',
-      borderRadius: '999px', padding: '4px 18px',
+      borderRadius: '999px',
       boxShadow: active ? '0 6px 18px rgba(47,143,142,0.28)' : 'none',
       transition: 'all 0.25s ease',
     });
@@ -556,6 +572,23 @@ class Component extends DCLogic {
         border: beds === i ? `2px solid ${TURQ}` : '1px solid var(--card-border)',
         background: beds === i ? TURQ : 'rgba(255,255,255,0.7)',
         color: beds === i ? '#ffffff' : 'var(--text)',
+        transition: 'all 0.2s ease',
+      },
+    }));
+
+    const rebondOptions = [
+      { label: 'Non', value: false },
+      { label: 'Oui', value: true },
+    ].map(({ label, value }) => ({
+      label,
+      onClick: () => this.setRebond(value),
+      style: {
+        flex: 1, fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '13px',
+        textTransform: 'uppercase', letterSpacing: '1.2px',
+        padding: '13px 0', borderRadius: '999px', cursor: 'pointer',
+        border: rebond === value ? `2px solid ${TURQ}` : '1px solid var(--card-border)',
+        background: rebond === value ? TURQ : 'rgba(255,255,255,0.7)',
+        color: rebond === value ? '#ffffff' : 'var(--text)',
         transition: 'all 0.2s ease',
       },
     }));
@@ -596,7 +629,7 @@ class Component extends DCLogic {
       name, nameFromCookie, onNameChange: this.onNameChange,
       diet, onDietChange: this.onDietChange,
       note, onNoteChange: this.onNoteChange,
-      bedOptions,
+      bedOptions, rebondOptions,
       presenceFillStyle,
       foldStyle: {
         display: 'grid',

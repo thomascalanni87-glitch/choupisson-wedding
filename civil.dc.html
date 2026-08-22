@@ -97,7 +97,7 @@
 
       <label style="{{ labelStyle }}">Serez-vous présent·e ?</label>
 
-      <div ref="{{ trackRef }}" style="position: relative; margin: 0 10px 6px; height: 64px; width: 642px">
+      <p style="font-family: 'Nunito',sans-serif; font-size: 15px; color: var(--text-soft); opacity: 0.7; text-align: center; margin: 0 0 18px">Fais glisser le gros choupisson pour répondre</p><div ref="{{ trackRef }}" style="position:relative; margin:0 42px 6px; height:64px; max-width:100%; box-sizing:border-box;">
         <div style="position:absolute; left:0; right:0; top:20px; height:8px; border-radius:4px; background:rgba(255,255,255,0.20);"></div>
         <div style="{{ presenceFillStyle }}"></div>
         <div onClick="{{ setPresenceNon }}" style="position:absolute; left:0; top:24px; transform:translate(-50%,-50%); width:36px; height:36px; border-radius:50%; cursor:pointer;"></div>
@@ -115,7 +115,7 @@
         </sc-if>
       </div>
 
-      <p style="font-family: 'Nunito',sans-serif; font-size: 15px; color: var(--text-soft); opacity: 0.7; text-align: center; margin: 0 0 18px">Fais glisser le gros choupisson pour répondre</p><div style="display:flex; justify-content:space-between; align-items:center; margin:0 10px 30px;">
+      <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; align-items:center; margin:0 10px 30px;">
         <span style="{{ tickNonStyle }}">Non</span>
         <span style="{{ tickPendingStyle }}">Pas encore décidé</span>
         <span style="{{ tickOuiStyle }}">Oui !</span>
@@ -140,14 +140,17 @@
                 <div style="position:absolute; left:-52px; top:-2px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:30px; line-height:1;">{{ ev.icon }}</div>
                 <div style="position:absolute; left:-35px; top:40px; bottom:6px; width:2px; background:rgba(255,255,255,0.45);"></div>
                 <div style="font-family:'Bricolage Grotesque',sans-serif; font-size:22px; font-weight:600; color:var(--text); letter-spacing:-0.6px;">{{ ev.time }} — {{ ev.title }}</div>
+                <sc-if value="{{ ev.sub }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-family:'Space Grotesk',sans-serif; font-weight:500; letter-spacing:0.6px; font-size:14px; color:var(--text-soft); opacity:0.85; text-wrap:pretty;">{{ ev.sub }}</div>
+                </sc-if>
                 <sc-if value="{{ ev.mapUrl }}" hint-placeholder-val="{{ true }}">
-                  <a href="{{ ev.mapUrl }}" target="_blank" rel="noopener" style="font-family:'Space Grotesk',sans-serif; font-weight:500; letter-spacing:0.6px; font-size:12px; color:var(--text-soft); opacity:0.85; text-decoration:underline; text-underline-offset:3px;">{{ ev.place }}</a>
+                  <div style="font-family:'Space Grotesk',sans-serif; font-weight:500; letter-spacing:0.6px; font-size:14px; display:inline-flex; align-items:center; gap:6px; color:var(--text-soft); opacity:0.85;"><span style="font-size:15px; line-height:1;">📍</span><a href="{{ ev.mapUrl }}" target="_blank" rel="noopener" style="color:inherit; font:inherit; letter-spacing:inherit; text-decoration:underline; text-underline-offset:3px;">{{ ev.place }}</a></div>
                 </sc-if>
                 <sc-if value="{{ ev.noMap }}" hint-placeholder-val="{{ false }}">
-                  <div style="font-family:'Space Grotesk',sans-serif; font-weight:500; letter-spacing:0.6px; font-size:12px; color:var(--text-soft); opacity:0.85;">{{ ev.place }}</div>
+                  <div style="font-family:'Space Grotesk',sans-serif; font-weight:500; letter-spacing:0.6px; font-size:14px; color:var(--text-soft); opacity:0.85;">{{ ev.place }}</div>
                 </sc-if>
                 <sc-if value="{{ ev.blank }}" hint-placeholder-val="{{ false }}">
-                  <div style="height:18px;"></div>
+                  
                 </sc-if>
               </div>
             </sc-for>
@@ -239,7 +242,7 @@ class Component extends DCLogic {
       dragMoves: this.state.dragMoves,
       musicPlayed: this.state.musicPlayed,
     };
-    setCookie('choupisson_reponse_civil', JSON.stringify(a), 180);
+    setCookie('choupisson_reponse_civil', JSON.stringify(a), 365);
   }
 
   onNameChange = (e) => this.setState({ name: e.target.value });
@@ -329,6 +332,7 @@ class Component extends DCLogic {
       petit_mot: this.state.note,
       nb_hesitations_choupisson: this.state.dragMoves,
       musique_ecoutee: this.state.musicPlayed,
+      mode_synthwave_teste: getCookie('choupisson_synthwave_clique') === '1',
     };
 
     try {
@@ -342,7 +346,7 @@ class Component extends DCLogic {
         throw new Error(`Erreur serveur: ${reponse.status}`);
       }
 
-      setCookie('choupisson_name', this.state.name, 180);
+      setCookie('choupisson_name', this.state.name, 365);
       this.saveAnswer();
       this.setState({ submitted: true, submitError: false, alreadySent: true });
 
@@ -350,7 +354,7 @@ class Component extends DCLogic {
       console.error('Erreur envoi RSVP:', err);
       const endpointAbsent = err instanceof TypeError;
       if (endpointAbsent) {
-        setCookie('choupisson_name', this.state.name, 180);
+        setCookie('choupisson_name', this.state.name, 365);
         this.saveAnswer();
         this.setState({ submitted: true, submitError: false, alreadySent: true });
       } else {
@@ -561,12 +565,16 @@ class Component extends DCLogic {
     };
 
     const tick = (active) => ({
-      fontFamily: 'Cormorant Garamond, serif', fontSize: active ? '30px' : '26px',
-      fontWeight: active ? 700 : 500, letterSpacing: '0.5px',
+      fontFamily: 'Nunito, sans-serif',
+      fontSize: 'clamp(10px, 2.6vw, 13px)',
+      fontWeight: 700, textTransform: 'uppercase',
+      letterSpacing: 'clamp(0.4px, 0.25vw, 1.2px)',
+      whiteSpace: 'nowrap',
+      padding: 'clamp(7px, 2vw, 10px) clamp(9px, 3vw, 16px)',
       color: active ? '#7c1220' : 'var(--text-soft)',
       background: active ? '#ffffff' : 'transparent',
       border: active ? '2px solid #ffffff' : '2px solid transparent',
-      borderRadius: '999px', padding: '4px 18px',
+      borderRadius: '999px',
       boxShadow: active ? '0 6px 18px rgba(0,0,0,0.25)' : 'none',
       transition: 'all 0.25s ease',
     });
@@ -574,15 +582,17 @@ class Component extends DCLogic {
     const timeline = [
       { time: '11h00', title: 'Cérémonie civile', place: 'Mairie de Lomme - 72 Av. de la République, 59461 Lille', icon: '💍' },
       { time: '11h30', title: 'Brunch & Vin chaud', place: 'La Choupissonnière - 52T Rue Alexandre Desrousseaux', icon: '🥐' },
-      { time: '18h00', title: 'Apéro', place: 'La Choupissonnière', icon: '🥂' },
-      { time: '21h00', title: 'Nuit de noce', place: 'La Choupissonnière', icon: '❤️' },
+      { time: '15h00', title: "Examen d'entrée dans la famille", sub: "Épreuve orale, test de sang-froid, mise en situation, essais aérodynamiques des mariés. Tests ADN de la famille et validation du dossier", icon: '📋' },
+      { time: '16h00', title: 'Battle : qui connaît le mieux les mariés ?', sub: 'La belle-famille contre la belle-famille. Arbitrage 100% partial', icon: '🏆' },
+      { time: '18h00', title: 'Atelier Spritz', sub: "Passer de la théorie à la pratique. Survivre à 48 conversations sur la météo, l'immobilier et la politique. Vérification de la nouvelle aptitude à dire \"Je suis d'accord avec tes parents\"", place: 'La Choupissonnière', icon: '🥂' },
+      { time: '21h00', title: 'Nuit de noce', sub: 'Épreuve finale du programme. Aucun témoin autorisé #NoPhoto', place: 'La Choupissonnière', icon: '❤️' },
       { time: '23h00', icon: '📺', title: "Faîtes entrer l'Accusé", place: 'RMC Life - Jean-Mimi Touchepas : le tripoteur des Cévènes au lubrifiant goût vanille' },
     ];
 
     const MAIRIE = '72 Av. de la République, 59461 Lille, France';
     const CHOUPI = '52T Rue Alexandre Desrousseaux, Lille, France';
     const mapsFor = { '11h00': MAIRIE, '11h30': CHOUPI };
-    const blankPlace = ['18h00', '21h00'];
+    const blankPlace = ['15h00', '16h00', '18h00', '21h00'];
     const timelineWithMaps = timeline.map((ev) => {
       const addr = mapsFor[ev.time];
       const blank = blankPlace.includes(ev.time);

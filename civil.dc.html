@@ -193,6 +193,9 @@ class Component extends DCLogic {
     dragging: false,
     submitted: false,
     submitError: false,
+    alreadySent: false,
+    dragMoves: 0,
+    musicPlayed: false,
     showConfetti: false,
     showTears: false,
   };
@@ -203,6 +206,37 @@ class Component extends DCLogic {
   componentDidMount() {
     const savedName = getCookie('choupisson_name');
     if (savedName) this.setState({ name: savedName });
+    this.restoreAnswer();
+  }
+
+  restoreAnswer() {
+    try {
+      const raw = getCookie('choupisson_reponse_civil');
+      if (!raw) return;
+      const a = JSON.parse(raw);
+      this.setState({
+        name: a.name || this.state.name,
+        diet: a.diet || '',
+        note: a.note || '',
+        presence: a.presence || 'pending',
+        dragFrac: a.presence === 'non' ? 0 : a.presence === 'oui' ? 1 : 0.5,
+        alreadySent: true,
+        dragMoves: a.dragMoves || 0,
+        musicPlayed: !!a.musicPlayed,
+      });
+    } catch (e) {}
+  }
+
+  saveAnswer() {
+    const a = {
+      name: this.state.name,
+      diet: this.state.diet,
+      note: this.state.note,
+      presence: this.state.presence,
+      dragMoves: this.state.dragMoves,
+      musicPlayed: this.state.musicPlayed,
+    };
+    setCookie('choupisson_reponse_civil', JSON.stringify(a), 180);
   }
 
   onNameChange = (e) => this.setState({ name: e.target.value });
@@ -246,7 +280,7 @@ class Component extends DCLogic {
           else this.audioRef.current.pause();
         }
       } catch (e) {}
-      return { musicOn: on };
+      return { musicOn: on, musicPlayed: s.musicPlayed || on };
     });
   };
 
@@ -272,6 +306,12 @@ class Component extends DCLogic {
     const rect = el.getBoundingClientRect();
     let frac = (clientX - rect.left) / rect.width;
     frac = Math.max(0, Math.min(1, frac));
+    const prev = this.state.dragFrac;
+    const dir = frac > prev + 0.01 ? 1 : frac < prev - 0.01 ? -1 : 0;
+    if (dir !== 0 && this._lastDir && dir !== this._lastDir) {
+      this.setState((st) => ({ dragMoves: st.dragMoves + 1 }));
+    }
+    if (dir !== 0) this._lastDir = dir;
     this.setState({ dragFrac: frac });
   }
 
@@ -284,6 +324,8 @@ class Component extends DCLogic {
       presence: this.state.presence,
       preference_alimentaire: this.state.diet,
       petit_mot: this.state.note,
+      nb_hesitations_choupisson: this.state.dragMoves,
+      musique_ecoutee: this.state.musicPlayed,
     };
 
     try {
@@ -298,14 +340,16 @@ class Component extends DCLogic {
       }
 
       setCookie('choupisson_name', this.state.name, 180);
-      this.setState({ submitted: true, submitError: false });
+      this.saveAnswer();
+      this.setState({ submitted: true, submitError: false, alreadySent: true });
 
     } catch (err) {
       console.error('Erreur envoi RSVP:', err);
       const endpointAbsent = err instanceof TypeError;
       if (endpointAbsent) {
         setCookie('choupisson_name', this.state.name, 180);
-        this.setState({ submitted: true, submitError: false });
+        this.saveAnswer();
+        this.setState({ submitted: true, submitError: false, alreadySent: true });
       } else {
         this.setState({ submitError: true });
       }
@@ -581,7 +625,7 @@ class Component extends DCLogic {
       timeline: timelineWithMaps,
       calendarLink: this.buildCalendarLink(),
       onSubmit: this.onSubmit,
-      submitButtonStyle, submitLabel: 'Envoyer ma réponse',
+      submitButtonStyle, submitLabel: this.state.alreadySent ? 'Modifier ma réponse' : 'Envoyer ma réponse',
       submitted, submitError: this.state.submitError,
       merciLine: name.trim()
         ? `Merci ${name.trim()}, votre réponse est bien prise en compte.`

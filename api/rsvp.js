@@ -13,10 +13,13 @@ module.exports = async (req, res) => {
   try {
     const {
       nom,
-      evenement,        // "civil" ou "religieux"
-      presence,          // valeur du slider
-      preferenceAlimentaire, // uniquement pour religieux, sinon vide
-      couchages,         // 0, 1 ou 2, uniquement pour religieux
+      evenement,                 // "civil" ou "religieux"
+      presence,                  // valeur du slider / choupisson
+      preference_alimentaire,    // texte libre
+      petit_mot,                 // texte libre (déclaration, blague, etc.)
+      nb_hesitations_choupisson, // nombre de va-et-vient du drag
+      musique_ecoutee,           // booléen
+      couchages,                 // 0, 1 ou 2, uniquement pour religieux
     } = req.body;
 
     // Validation minimale — on ne veut pas écrire n'importe quoi dans le Sheet
@@ -37,19 +40,24 @@ module.exports = async (req, res) => {
     const timestamp = new Date().toISOString();
 
     // Une ligne = une soumission. Ordre des colonnes à faire correspondre
-    // à l'en-tête de ton Google Sheet.
+    // à l'en-tête de ton Google Sheet :
+    // Timestamp | Nom | Événement | Présence | Préférence alimentaire |
+    // Petit mot | Nb hésitations choupisson | Musique écoutée | Couchages
     const row = [
       timestamp,
       nom,
       evenement,
       presence ?? '',
-      preferenceAlimentaire ?? '',
+      preference_alimentaire ?? '',
+      petit_mot ?? '',
+      nb_hesitations_choupisson ?? '',
+      musique_ecoutee ? 'Oui' : 'Non',
       couchages ?? '',
     ];
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'Feuille1!A:F', // adapte le nom de l'onglet si besoin
+      range: 'Feuille1!A:I', // adapte le nom de l'onglet si besoin
       valueInputOption: 'USER_ENTERED',
       insertDataOption: 'INSERT_ROWS',
       requestBody: { values: [row] },

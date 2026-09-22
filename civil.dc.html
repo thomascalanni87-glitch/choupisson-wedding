@@ -12,8 +12,9 @@
   <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon-64.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-180.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;family=Nunito:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Oswald:wght@300;400;500;600;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;family=Nunito:wght@400;600;700&amp;display=swap" rel="stylesheet">
   <style>
+    @font-face { font-family: 'Cathylise Janetson'; src: url('assets/CathyliseJanetson.otf') format('opentype'); font-display: swap; }
     body { margin: 0; background: #5e0f1a; }
     input::placeholder, textarea::placeholder { color: rgba(255,246,240,0.72); opacity: 1; }
     @keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
@@ -79,8 +80,8 @@
 
     <div style="text-align:center; margin-bottom:36px;">
       <div style="font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:15px; text-transform:uppercase; letter-spacing:3.4px; color:var(--red); margin-bottom:14px; line-height:1.5;">C'est bientôt l'heure de sortir votre plus beau pull de Noël !</div>
-      <h1 style="font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:58px; color:var(--text); margin:0; letter-spacing:-2px; line-height:0.95;">Mariage Civil</h1>
-      <div style="font-family:'Bricolage Grotesque',sans-serif; font-weight:600; font-size:46px; color:var(--red); margin:10px 0 8px; letter-spacing:-1.4px;">5 décembre 2026</div>
+      <h1 style="font-family: Oswald; font-weight: 600; font-size: 58px; text-transform: uppercase; color: var(--text); margin: 0; letter-spacing: 1px; line-height: 1">CHARLOTTE&nbsp;<br><span style="font-family: 'Cathylise Janetson',cursive; font-weight: 400; font-size: 0.92em; text-transform: none; line-height: 0.9; vertical-align: -0.06em; padding: 0 0.12em; padding-top: 8px; padding-bottom: 8px; display: inline-block; position: relative; top: -12px">et</span> THOMAS</h1>
+      <div style="font-family:'Oswald',sans-serif; font-weight:500; font-size:46px; color:var(--red); margin:10px 0 8px; letter-spacing:1px;">5 décembre 2026</div>
       <p style="font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13px; text-transform:uppercase; letter-spacing:2.4px; color:var(--text-soft); margin:0;">Chalet, feu de bois &amp; guirlandes</p>
     </div>
 
@@ -582,9 +583,9 @@ class Component extends DCLogic {
     const timeline = [
       { time: '11h00', title: 'Cérémonie civile', place: 'Mairie de Lomme - 72 Av. de la République, 59461 Lille', icon: '💍' },
       { time: '11h30', title: 'Brunch & Vin chaud', place: 'La Choupissonnière - 52T Rue Alexandre Desrousseaux', icon: '🥐' },
-      { time: '15h00', title: "Examen d'entrée dans la famille", sub: "Épreuve orale, test de sang-froid, mise en situation, essais aérodynamiques des mariés. Tests ADN de la famille et validation du dossier", icon: '📋' },
-      { time: '16h00', title: 'Battle : qui connaît le mieux les mariés ?', sub: 'La belle-famille contre la belle-famille. Arbitrage 100% partial', icon: '🏆' },
-      { time: '18h00', title: 'Atelier Spritz', sub: "Passer de la théorie à la pratique. Survivre à 48 conversations sur la météo, l'immobilier et la politique. Vérification de la nouvelle aptitude à dire \"Je suis d'accord avec tes parents\"", place: 'La Choupissonnière', icon: '🥂' },
+      { time: '15h00', title: "Examen d'entrée dans la famille", sub: "Blind test collaboratif, Épreuve musicale collective.\nValidation du dossier selon les points obtenus", icon: '📋' },
+      { time: '16h00', title: 'Battle : qui connaît le mieux les mariés ?', sub: 'Saurez vous répondre correctement aux questions sur les mariés ? \nPariez en équipe pour réponde. Une récompense incroyable à gagner', icon: '🏆' },
+      { time: '18h00', title: 'Atelier Spritz', sub: "Passer de la théorie à la pratique suivi d'une dégustation. Vérification de la nouvelle aptitude à dire \"J'adore ma belle famille\"", place: 'La Choupissonnière', icon: '🥂' },
       { time: '21h00', title: 'Nuit de noce', sub: 'Épreuve finale du programme. Aucun témoin autorisé #NoPhoto', place: 'La Choupissonnière', icon: '❤️' },
       { time: '23h00', icon: '📺', title: "Faîtes entrer l'Accusé", place: 'RMC Life - Jean-Mimi Touchepas : le tripoteur des Cévènes au lubrifiant goût vanille' },
     ];

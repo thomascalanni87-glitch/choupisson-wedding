@@ -38,9 +38,9 @@
 
   <div style="{{ photoLayerStyle }}"></div>
 
-  <div style="position:fixed; left:0; right:0; bottom:10px; height:54px; z-index:3; pointer-events:none; overflow:hidden;">
-    <div style="position:absolute; bottom:0; left:0; width:46px; height:46px; animation:hogWalk 17s linear infinite;">
-      <div onClick="{{ burstHearts }}" style="width:100%; height:100%; cursor:pointer; pointer-events:auto; animation:hogHop 17s ease-in-out infinite;">
+  <div style="position:fixed; left:0; right:0; bottom:10px; height:120px; z-index:3; pointer-events:none; overflow:visible;">
+    <div style="position:absolute; bottom:0; left:0; width:46px; height:46px; animation:hogWalk 21s linear infinite;">
+      <div onClick="{{ burstHearts }}" style="width:100%; height:100%; cursor:pointer; pointer-events:auto; animation:hogHop 21s ease-in-out infinite;">
       <div style="width:100%; height:100%; animation:hogBob 0.5s ease-in-out infinite;">
         <svg viewBox="0 0 92 70" width="100%" height="100%">
           <g style="transform-origin:34px 58px; animation:hogLegs 0.28s ease-in-out infinite;">
@@ -160,7 +160,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { synthwave: false, heartsOn: false, heartSeed: 0 };
+  state = { synthwave: false, heartsOn: false, heartSeed: 0, scrollY: 0 };
 
   burstHearts = () => {
     clearTimeout(this._heartTimer);
@@ -170,9 +170,14 @@ class Component extends DCLogic {
     });
   };
 
-  componentWillUnmount() { clearTimeout(this._heartTimer); }
+  componentWillUnmount() {
+    clearTimeout(this._heartTimer);
+    window.removeEventListener('scroll', this._onScroll);
+  }
 
   componentDidMount() {
+    this._onScroll = () => this.setState({ scrollY: window.scrollY || 0 });
+    window.addEventListener('scroll', this._onScroll, { passive: true });
     try {
       const saved = localStorage.getItem('choupisson-synthwave');
       if (saved === '1') this.setState({ synthwave: true });
@@ -237,7 +242,7 @@ class Component extends DCLogic {
       position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1,
       backgroundImage: 'url(assets/couple.png)',
       backgroundSize: 'min(120vh, 1000px)',
-      backgroundPosition: 'right -18vw bottom -10vh',
+      backgroundPosition: `right -18vw bottom calc(-10vh - ${this.state.scrollY * 0.35}px)`,
       backgroundRepeat: 'no-repeat',
       opacity: synthwave ? 0 : 0.16,
       transition: 'opacity 0.7s ease',

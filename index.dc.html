@@ -110,6 +110,10 @@
 
     </div>
 
+    <div style="display:flex; justify-content:center; margin-bottom:36px;">
+      <button onClick="{{ toggleSynthwave }}" style="{{ synthButtonStyle }}">{{ synthLabel }}</button>
+    </div>
+
     <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:clamp(20px,3vw,32px); width:100%;">
 
       <a href="{{ civilHref }}" style="{{ civilLinkStyle }}">
@@ -150,9 +154,6 @@
 
     </div>
 
-    <div style="display:flex; justify-content:center; margin-top:44px;">
-      <button onClick="{{ toggleSynthwave }}" style="{{ synthButtonStyle }}">{{ synthLabel }}</button>
-    </div>
 
   </div>
 </div>
@@ -160,7 +161,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { synthwave: false, heartsOn: false, heartSeed: 0, scrollY: 0 };
+  state = { synthwave: false, heartsOn: false, heartSeed: 0, scrollY: 0, isMobile: false };
 
   burstHearts = () => {
     clearTimeout(this._heartTimer);
@@ -173,11 +174,15 @@ class Component extends DCLogic {
   componentWillUnmount() {
     clearTimeout(this._heartTimer);
     window.removeEventListener('scroll', this._onScroll);
+    window.removeEventListener('resize', this._onResize);
   }
 
   componentDidMount() {
     this._onScroll = () => this.setState({ scrollY: window.scrollY || 0 });
     window.addEventListener('scroll', this._onScroll, { passive: true });
+    this._onResize = () => this.setState({ isMobile: window.innerWidth < 720 });
+    this._onResize();
+    window.addEventListener('resize', this._onResize);
     try {
       const saved = localStorage.getItem('choupisson-synthwave');
       if (saved === '1') this.setState({ synthwave: true });
@@ -242,7 +247,9 @@ class Component extends DCLogic {
       position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1,
       backgroundImage: 'url(assets/couple.png)',
       backgroundSize: 'min(120vh, 1000px)',
-      backgroundPosition: `right -18vw bottom calc(-10vh - ${this.state.scrollY * 0.35}px)`,
+      backgroundPosition: this.state.isMobile
+        ? `center bottom calc(-6vh - ${this.state.scrollY * 0.35}px)`
+        : `right -18vw bottom calc(-10vh - ${this.state.scrollY * 0.35}px)`,
       backgroundRepeat: 'no-repeat',
       opacity: synthwave ? 0 : 0.16,
       transition: 'opacity 0.7s ease',

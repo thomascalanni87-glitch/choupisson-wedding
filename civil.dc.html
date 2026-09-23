@@ -98,7 +98,7 @@
 
       <label style="{{ labelStyle }}">Serez-vous présent·e ?</label>
 
-      <p style="font-family: 'Nunito',sans-serif; font-size: 15px; color: var(--text-soft); opacity: 0.7; text-align: center; margin: 0 0 18px">Fais glisser le gros choupisson pour répondre</p><div ref="{{ trackRef }}" style="position:relative; margin:0 42px 6px; height:64px; max-width:100%; box-sizing:border-box;">
+      <p style="font-family: 'Nunito',sans-serif; font-size: 15px; color: var(--text-soft); opacity: 0.7; text-align: center; margin: 0 0 18px">Fais glisser le gros choupisson pour répondre</p><div ref="{{ trackRef }}" style="position:relative; display:block; width:auto; margin:0 42px 6px; height:64px; box-sizing:border-box; touch-action:none;">
         <div style="position:absolute; left:0; right:0; top:20px; height:8px; border-radius:4px; background:rgba(255,255,255,0.20);"></div>
         <div style="{{ presenceFillStyle }}"></div>
         <div onClick="{{ setPresenceNon }}" style="position:absolute; left:0; top:24px; transform:translate(-50%,-50%); width:36px; height:36px; border-radius:50%; cursor:pointer;"></div>
@@ -116,7 +116,7 @@
         </sc-if>
       </div>
 
-      <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; align-items:center; margin:0 10px 30px;">
+      <div style="display:flex; flex-wrap:nowrap; gap:clamp(2px, 1.2vw, 8px); justify-content:center; align-items:center; margin:0 0 30px; min-width:0;">
         <span style="{{ tickNonStyle }}">Non</span>
         <span style="{{ tickPendingStyle }}">Pas encore décidé</span>
         <span style="{{ tickOuiStyle }}">Oui !</span>
@@ -558,6 +558,7 @@ class Component extends DCLogic {
       top: '24px',
       width: '76px', height: '76px',
       marginLeft: '-38px', marginTop: '-38px',
+      WebkitUserSelect: 'none', WebkitTouchCallout: 'none', WebkitTapHighlightColor: 'transparent',
       cursor: 'grab', userSelect: 'none', touchAction: 'none',
       filter: 'drop-shadow(0 4px 8px rgba(124,18,32,0.28))',
       transform: `rotate(${smile * -7}deg)`,
@@ -567,11 +568,12 @@ class Component extends DCLogic {
 
     const tick = (active) => ({
       fontFamily: 'Nunito, sans-serif',
-      fontSize: 'clamp(10px, 2.6vw, 13px)',
+      fontSize: 'clamp(8px, 2.5vw, 13px)',
       fontWeight: 700, textTransform: 'uppercase',
-      letterSpacing: 'clamp(0.4px, 0.25vw, 1.2px)',
+      letterSpacing: 'clamp(0.2px, 0.2vw, 1.2px)',
       whiteSpace: 'nowrap',
-      padding: 'clamp(7px, 2vw, 10px) clamp(9px, 3vw, 16px)',
+      flex: '0 1 auto', minWidth: 0,
+      padding: 'clamp(6px, 1.8vw, 10px) clamp(5px, 1.8vw, 16px)',
       color: active ? '#7c1220' : 'var(--text-soft)',
       background: active ? '#ffffff' : 'transparent',
       border: active ? '2px solid #ffffff' : '2px solid transparent',
@@ -584,7 +586,7 @@ class Component extends DCLogic {
       { time: '11h00', title: 'Cérémonie civile', place: 'Mairie de Lomme - 72 Av. de la République, 59461 Lille', icon: '💍' },
       { time: '11h30', title: 'Brunch & Vin chaud', place: 'La Choupissonnière - 52T Rue Alexandre Desrousseaux', icon: '🥐' },
       { time: '15h00', title: "Examen d'entrée dans la famille", sub: "Blind test collaboratif, Épreuve musicale collective.\nValidation du dossier selon les points obtenus", icon: '📋' },
-      { time: '16h00', title: 'Battle : qui connaît le mieux les mariés ?', sub: 'Saurez vous répondre correctement aux questions sur les mariés ? \nPariez en équipe pour réponde. Une récompense incroyable à gagner', icon: '🏆' },
+      { time: '16h00', title: 'Battle : qui connaît le mieux les mariés ?', sub: 'Saurez vous répondre correctement aux questions sur les mariés ? \nPariez en équipe pour répondre. Une récompense incroyable à gagner', icon: '🏆' },
       { time: '18h00', title: 'Atelier Spritz', sub: "Passer de la théorie à la pratique suivi d'une dégustation. Vérification de la nouvelle aptitude à dire \"J'adore ma belle famille\"", place: 'La Choupissonnière', icon: '🥂' },
       { time: '21h00', title: 'Nuit de noce', sub: 'Épreuve finale du programme. Aucun témoin autorisé #NoPhoto', place: 'La Choupissonnière', icon: '❤️' },
       { time: '23h00', icon: '📺', title: "Faîtes entrer l'Accusé", place: 'RMC Life - Jean-Mimi Touchepas : le tripoteur des Cévènes au lubrifiant goût vanille' },

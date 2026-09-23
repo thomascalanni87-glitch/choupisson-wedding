@@ -88,7 +88,7 @@
 
       <label style="{{ labelStyle }}">Serez-vous présent·e ?</label>
 
-      <p style="font-family:'Nunito',sans-serif; font-size:15px; color:var(--text-soft); opacity:0.75; text-align:center; margin:0 0 18px;">Fais glisser la petite choupissonne pour répondre</p><div ref="{{ trackRef }}" style="position:relative; margin:0 42px 6px; height:64px; max-width:100%; box-sizing:border-box;">
+      <p style="font-family:'Nunito',sans-serif; font-size:15px; color:var(--text-soft); opacity:0.75; text-align:center; margin:0 0 18px;">Fais glisser la petite choupissonne pour répondre</p><div ref="{{ trackRef }}" style="position:relative; display:block; width:auto; margin:0 42px 6px; height:64px; box-sizing:border-box; touch-action:none;">
         <div style="position:absolute; left:0; right:0; top:20px; height:8px; border-radius:4px; background:rgba(47,74,74,0.14);"></div>
         <div style="{{ presenceFillStyle }}"></div>
         <div onClick="{{ setPresenceNon }}" style="position:absolute; left:0; top:24px; transform:translate(-50%,-50%); width:36px; height:36px; border-radius:50%; cursor:pointer;"></div>
@@ -539,6 +539,7 @@ class Component extends DCLogic {
       left: `${frac * 100}%`, top: '24px',
       width: '76px', height: '76px',
       marginLeft: '-38px', marginTop: '-38px',
+      WebkitUserSelect: 'none', WebkitTouchCallout: 'none', WebkitTapHighlightColor: 'transparent',
       cursor: 'grab', userSelect: 'none', touchAction: 'none',
       filter: 'drop-shadow(0 4px 8px rgba(47,143,142,0.32))',
       transform: `rotate(${smile * -7}deg)`,
